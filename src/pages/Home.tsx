@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import CheckInFeed from '../components/CheckInFeed';
 
 const Home: React.FC = () => {
   const navigate = useNavigate();
@@ -35,7 +36,20 @@ const Home: React.FC = () => {
               <div className="font-medium">Find Friends</div>
             </button>
           </div>
+          <div className="mt-3">
+            <button 
+              onClick={() => navigate('/checkin')}
+              className="w-full bg-green-500 hover:bg-green-600 text-white rounded-lg p-3 text-center transition-colors">
+              <div className="flex items-center justify-center space-x-2">
+                <span className="text-lg">📍</span>
+                <span className="font-medium">Quick Check-In</span>
+              </div>
+            </button>
+          </div>
         </div>
+
+        {/* Friends' Check-ins Feed */}
+        <CheckInFeed maxItems={5} />
 
         {/* Recent Activity */}
         <div className="bg-white rounded-xl p-4 shadow-sm">

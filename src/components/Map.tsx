@@ -51,12 +51,12 @@ const Map: React.FC<MapProps> = ({
     }
   }, []);
 
-  // Create custom icons for different markers
+  // Create custom icons for different markers (no emojis to avoid encoding issues)
   const userIcon = new L.Icon({
     iconUrl: 'data:image/svg+xml;base64,' + btoa(`
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
-        <circle cx="16" cy="16" r="10" fill="#8B5CF6" stroke="#fff" stroke-width="2"/>
-        <text x="16" y="20" text-anchor="middle" fill="white" font-size="12" font-family="Arial">👤</text>
+        <circle cx="16" cy="16" r="12" fill="#8B5CF6" stroke="#fff" stroke-width="3"/>
+        <circle cx="16" cy="16" r="4" fill="white"/>
       </svg>
     `),
     iconSize: [32, 32],
@@ -67,8 +67,10 @@ const Map: React.FC<MapProps> = ({
   const friendIcon = new L.Icon({
     iconUrl: 'data:image/svg+xml;base64,' + btoa(`
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
-        <circle cx="16" cy="16" r="10" fill="#10B981" stroke="#fff" stroke-width="2"/>
-        <text x="16" y="20" text-anchor="middle" fill="white" font-size="12" font-family="Arial">🐕</text>
+        <circle cx="16" cy="16" r="12" fill="#10B981" stroke="#fff" stroke-width="3"/>
+        <circle cx="12" cy="12" r="2" fill="white"/>
+        <circle cx="20" cy="12" r="2" fill="white"/>
+        <path d="M10 20 Q16 25 22 20" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/>
       </svg>
     `),
     iconSize: [32, 32],

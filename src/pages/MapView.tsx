@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Map from '../components/Map';
+import { checkInsService, CheckInWithProfile } from '../lib/checkInsService';
+import { openInMaps } from '../lib/mapsUtils';
 
 interface Friend {
   id: string;
@@ -14,6 +16,7 @@ interface Friend {
 
 const MapView: React.FC = () => {
   const navigate = useNavigate();
+  const [friendsCheckIns, setFriendsCheckIns] = useState<CheckInWithProfile[]>([]);
   
   // Mock friends data with locations around San Francisco
   const [friends] = useState<Friend[]>([
@@ -46,6 +49,21 @@ const MapView: React.FC = () => {
     },
   ]);
 
+  // Load friends' recent check-ins
+  useEffect(() => {
+    loadFriendsCheckIns();
+  }, []);
+
+  const loadFriendsCheckIns = async () => {
+    try {
+      const checkIns = await checkInsService.getFriendsCheckIns(20);
+      setFriendsCheckIns(checkIns);
+    } catch (error) {
+      console.error('Error loading friends check-ins for map:', error);
+    }
+  };
+
+
   const walkingFriends = friends.filter(friend => friend.isWalking);
 
   return (
@@ -74,8 +92,50 @@ const MapView: React.FC = () => {
           <Map friends={friends} showFriends={true} />
         </div>
 
-        {/* Floating Friend List */}
-        <div className="absolute bottom-4 left-4 right-4 max-w-md mx-auto">
+        {/* Floating Lists */}
+        <div className="absolute bottom-4 left-4 right-4 max-w-md mx-auto space-y-3">
+          {/* Recent Check-ins */}
+          {friendsCheckIns.length > 0 && (
+            <div className="bg-white rounded-xl shadow-lg p-4 max-h-48 overflow-y-auto">
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="font-semibold text-gray-900">
+                  Recent Check-ins ({friendsCheckIns.length})
+                </h2>
+                <span className="w-3 h-3 bg-blue-500 rounded-full"></span>
+              </div>
+              
+              <div className="space-y-2">
+                {friendsCheckIns.slice(0, 3).map((checkIn) => (
+                  <div
+                    key={checkIn.id}
+                    className="flex items-center justify-between p-2 bg-blue-50 rounded-lg cursor-pointer hover:bg-blue-100 transition-colors"
+                    onClick={() => openInMaps(checkIn)}
+                  >
+                    <div className="flex items-center space-x-2">
+                      <div className="w-8 h-8 bg-blue-200 rounded-full flex items-center justify-center text-sm">
+                        📍
+                      </div>
+                      <div>
+                        <p className="font-medium text-gray-900 text-sm">
+                          {checkIn.full_name || checkIn.username}
+                          {checkIn.dog_name && ` & ${checkIn.dog_name}`}
+                        </p>
+                        <p className="text-xs text-gray-600">{checkIn.location_name}</p>
+                      </div>
+                    </div>
+                    <div className="text-xs text-gray-500">
+                      {new Date(checkIn.created_at).toLocaleTimeString([], { 
+                        hour: '2-digit', 
+                        minute: '2-digit' 
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Walking Friends */}
           <div className="bg-white rounded-xl shadow-lg p-4 max-h-64 overflow-y-auto">
             <div className="flex items-center justify-between mb-3">
               <h2 className="font-semibold text-gray-900">

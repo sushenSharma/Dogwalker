@@ -1,7 +1,9 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useWalk } from '../contexts/WalkContext';
 
 const Walk: React.FC = () => {
+  const navigate = useNavigate();
   const { isWalking, walkStats, startWalk, endWalk } = useWalk();
 
   const formatDuration = (seconds: number) => {
@@ -91,6 +93,29 @@ const Walk: React.FC = () => {
                   <div className="text-2xl font-bold text-primary">{walkStats.calories}</div>
                   <div className="text-sm text-gray-600">Calories</div>
                 </div>
+              </div>
+            </div>
+
+            {/* Quick Actions */}
+            <div className="bg-white rounded-xl p-4 shadow-sm">
+              <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                Quick Actions
+              </h3>
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  onClick={() => navigate('/checkin')}
+                  className="flex items-center justify-center space-x-2 bg-green-50 hover:bg-green-100 text-green-700 p-3 rounded-lg transition-colors"
+                >
+                  <span className="text-lg">📍</span>
+                  <span className="font-medium">Check In</span>
+                </button>
+                <button
+                  onClick={() => navigate('/map')}
+                  className="flex items-center justify-center space-x-2 bg-blue-50 hover:bg-blue-100 text-blue-700 p-3 rounded-lg transition-colors"
+                >
+                  <span className="text-lg">🗺️</span>
+                  <span className="font-medium">View Map</span>
+                </button>
               </div>
             </div>
 

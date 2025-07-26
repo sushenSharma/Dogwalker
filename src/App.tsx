@@ -13,6 +13,7 @@ import Login from './pages/Login';
 import Landing from './pages/Landing';
 import AddDog from './pages/AddDog';
 import MapView from './pages/MapView';
+import CheckIn from './pages/CheckIn';
 import Notifications from './pages/Notifications';
 import AuthCallback from './pages/AuthCallback';
 
@@ -53,6 +54,7 @@ const AppContent: React.FC = () => {
         <>
           <Route path="/add-dog" element={<AddDog />} />
           <Route path="/map" element={<MapView />} />
+          <Route path="/checkin" element={<CheckIn />} />
           <Route path="/notifications" element={<Notifications />} />
         </>
       )}
