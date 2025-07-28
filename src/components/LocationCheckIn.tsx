@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -32,6 +32,7 @@ const LocationCheckIn: React.FC<LocationCheckInProps> = ({
   const [checkInNotes, setCheckInNotes] = useState('');
   const [isPublic, setIsPublic] = useState(true);
   const [userLocation, setUserLocation] = useState(currentLocation || { lat: 37.7749, lng: -122.4194 });
+  const mapRef = useRef<L.Map | null>(null);
 
   useEffect(() => {
     if (navigator.geolocation) {
@@ -87,15 +88,55 @@ const LocationCheckIn: React.FC<LocationCheckInProps> = ({
     popupAnchor: [0, -32],
   });
 
-  // Component to handle map clicks
+  // Component to handle map clicks and capture map reference
   const MapClickHandler = () => {
-    useMapEvents({
+    const map = useMapEvents({
       click: (e) => {
         setSelectedLocation({ lat: e.latlng.lat, lng: e.latlng.lng });
         setShowCheckInModal(true);
       },
     });
+    
+    // Store map reference
+    if (mapRef.current !== map) {
+      mapRef.current = map;
+    }
+    
     return null;
+  };
+
+  const centerMapOnCurrentLocation = () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const currentLat = position.coords.latitude;
+          const currentLng = position.coords.longitude;
+          
+          // Update user location state
+          setUserLocation({ lat: currentLat, lng: currentLng });
+          
+          // Center map on actual current location
+          if (mapRef.current) {
+            mapRef.current.setView([currentLat, currentLng], 16);
+          }
+        },
+        (error) => {
+          console.error('Error getting current location:', error);
+          // Fallback to stored user location if GPS fails
+          if (mapRef.current) {
+            mapRef.current.setView([userLocation.lat, userLocation.lng], 16);
+          }
+          alert('Unable to get your current location. Please enable location services.');
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 60000
+        }
+      );
+    } else {
+      alert('Geolocation is not supported by this browser.');
+    }
   };
 
   const handleCheckIn = () => {
@@ -197,11 +238,60 @@ const LocationCheckIn: React.FC<LocationCheckInProps> = ({
         </div>
       </div>
 
+      {/* Compass and Check-in Buttons */}
+      <div className="absolute bottom-20 right-4 z-[1000] flex flex-col space-y-3">
+        {/* Compass Button - Center on current location */}
+        <button
+          onClick={centerMapOnCurrentLocation}
+          className="bg-white text-gray-700 p-3 rounded-full shadow-lg hover:bg-gray-50 border border-gray-200 flex items-center justify-center"
+          title="Center map on current location"
+        >
+          <span className="text-lg">🧭</span>
+        </button>
+        
+        {/* Check-in at Current Location Button */}
+        <button
+          onClick={() => {
+            // Get fresh GPS location for check-in
+            if (navigator.geolocation) {
+              navigator.geolocation.getCurrentPosition(
+                (position) => {
+                  const currentLat = position.coords.latitude;
+                  const currentLng = position.coords.longitude;
+                  setUserLocation({ lat: currentLat, lng: currentLng });
+                  setSelectedLocation({ lat: currentLat, lng: currentLng });
+                  setShowCheckInModal(true);
+                },
+                (error) => {
+                  console.error('Error getting location for check-in:', error);
+                  // Fallback to stored location
+                  setSelectedLocation({ lat: userLocation.lat, lng: userLocation.lng });
+                  setShowCheckInModal(true);
+                }
+              );
+            } else {
+              setSelectedLocation({ lat: userLocation.lat, lng: userLocation.lng });
+              setShowCheckInModal(true);
+            }
+          }}
+          className="bg-blue-500 text-white p-3 rounded-full shadow-lg hover:bg-blue-600 flex items-center justify-center"
+          title="Check in at current location"
+        >
+          <span className="text-lg">📍</span>
+        </button>
+      </div>
+
       {/* Check-in Modal */}
       {showCheckInModal && (
         <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[2000] p-4">
           <div className="bg-white rounded-xl p-6 w-full max-w-sm">
-            <h3 className="text-lg font-semibold mb-4">Check In Here</h3>
+            <h3 className="text-lg font-semibold mb-4">
+              {selectedLocation && 
+               selectedLocation.lat === userLocation.lat && 
+               selectedLocation.lng === userLocation.lng 
+                ? "Check In at Current Location" 
+                : "Check In Here"}
+            </h3>
             
             <div className="space-y-4">
               <div>
@@ -212,7 +302,13 @@ const LocationCheckIn: React.FC<LocationCheckInProps> = ({
                   type="text"
                   value={checkInName}
                   onChange={(e) => setCheckInName(e.target.value)}
-                  placeholder="e.g., Central Park, Coffee Shop"
+                  placeholder={
+                    selectedLocation && 
+                    selectedLocation.lat === userLocation.lat && 
+                    selectedLocation.lng === userLocation.lng 
+                      ? "e.g., My Current Location, Dog Park"
+                      : "e.g., Central Park, Coffee Shop"
+                  }
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
