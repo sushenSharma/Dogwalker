@@ -67,6 +67,29 @@ const Login: React.FC = () => {
     }
   };
 
+  const handleForgotPassword = async () => {
+    if (!email) {
+      setError('Please enter your email address first');
+      return;
+    }
+
+    setError(null);
+    setLoading(true);
+
+    try {
+      const { error } = await authHelpers.resetPassword(email);
+      if (error) {
+        setError(error.message);
+      } else {
+        setError('Password reset email sent! Check your inbox.');
+      }
+    } catch (error: any) {
+      setError('Failed to send password reset email. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="h-screen bg-white flex flex-col">
       {/* Header */}
@@ -202,7 +225,9 @@ const Login: React.FC = () => {
                   </label>
                   <button
                     type="button"
-                    className="text-sm text-primary hover:text-primary-dark"
+                    onClick={handleForgotPassword}
+                    disabled={loading}
+                    className="text-sm text-primary hover:text-primary-dark disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Forgot Password ?
                   </button>

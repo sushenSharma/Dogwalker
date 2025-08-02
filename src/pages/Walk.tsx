@@ -62,12 +62,8 @@ const Walk: React.FC = () => {
           </div>
           
           <button
-            onClick={toggleWalk}
-            className={`w-full py-4 rounded-lg font-semibold text-lg transition-colors ${
-              isWalking
-                ? 'bg-red-500 hover:bg-red-600 text-white'
-                : 'bg-primary hover:bg-purple-700 text-white'
-            }`}
+            disabled
+            className="w-full py-4 rounded-lg font-semibold text-lg bg-gray-400 text-gray-200 opacity-60 cursor-not-allowed"
           >
             {isWalking ? 'End Walk' : 'Start Walk'}
           </button>

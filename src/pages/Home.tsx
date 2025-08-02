@@ -24,8 +24,8 @@ const Home: React.FC = () => {
           </h2>
           <div className="grid grid-cols-2 gap-3">
             <button 
-              onClick={() => navigate('/walk')}
-              className="bg-primary text-white rounded-lg p-4 text-center">
+              disabled
+              className="bg-gray-400 text-gray-200 rounded-lg p-4 text-center opacity-60 cursor-not-allowed">
               <div className="text-2xl mb-2">🚶‍♂️</div>
               <div className="font-medium">Start Walk</div>
             </button>
