@@ -54,6 +54,16 @@ export const checkInsService = {
       throw error;
     }
 
+    // Create activity notification for friends
+    if (data && checkIn.is_public) {
+      await this.createActivity(user.id, 'check_in', {
+        location_name: checkIn.location_name,
+        location_type: checkIn.location_type,
+        notes: checkIn.notes,
+        check_in_id: data.id
+      });
+    }
+
     return data;
   },
 
@@ -230,6 +240,38 @@ export const checkInsService = {
         }
       )
       .subscribe();
+  },
+
+  // Helper function to create activity notifications
+  async createActivity(actorId: string, activityType: string, activityData: any) {
+    try {
+      // Get friends of the actor to notify them
+      const { data: friends } = await supabase
+        .from('friends')
+        .select('user_id, friend_id')
+        .or(`user_id.eq.${actorId},friend_id.eq.${actorId}`)
+        .eq('status', 'accepted');
+
+      if (!friends || friends.length === 0) return;
+
+      // Create activity records for each friend
+      const activities = friends.map(friendship => ({
+        user_id: friendship.user_id === actorId ? friendship.friend_id : friendship.user_id,
+        actor_id: actorId,
+        activity_type: activityType,
+        activity_data: activityData
+      }));
+
+      const { error } = await supabase
+        .from('activities')
+        .insert(activities);
+
+      if (error) {
+        console.error('Error creating activity notifications:', error);
+      }
+    } catch (error) {
+      console.error('Error in createActivity:', error);
+    }
   }
 };
 

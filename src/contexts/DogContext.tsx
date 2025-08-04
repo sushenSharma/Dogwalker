@@ -36,20 +36,7 @@ interface DogProviderProps {
 }
 
 export const DogProvider: React.FC<DogProviderProps> = ({ children }) => {
-  const [dogs, setDogs] = useState<Dog[]>([
-    {
-      id: '1',
-      name: 'Max',
-      breed: 'Golden Retriever',
-      age: '3 years',
-      size: 'Large',
-      photo: '🐕',
-      personality: ['Friendly', 'Energetic', 'Playful'],
-      vaccinated: true,
-      spayedNeutered: true,
-      description: 'Max loves meeting new friends and playing fetch!',
-    },
-  ]);
+  const [dogs, setDogs] = useState<Dog[]>([]);
 
   const addDog = (dogData: Omit<Dog, 'id'>) => {
     const newDog: Dog = {
