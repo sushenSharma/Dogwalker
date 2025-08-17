@@ -34,7 +34,9 @@ const Profile: React.FC = () => {
               <p className="text-sm text-gray-500">San Francisco, CA</p>
             </div>
           </div>
-          <button className="w-full bg-gray-100 text-gray-700 py-2 rounded-lg font-medium">
+          <button 
+            onClick={() => navigate('/edit-profile')}
+            className="w-full bg-gray-100 text-gray-700 py-2 rounded-lg font-medium hover:bg-gray-200 transition-colors">
             Edit Profile
           </button>
         </div>

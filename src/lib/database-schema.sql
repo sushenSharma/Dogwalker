@@ -64,6 +64,10 @@ CREATE POLICY "Users can view friends public check-ins" ON check_ins
     )
   );
 
+-- Users can view all public check-ins for discovery (nearby people)
+CREATE POLICY "Users can view all public check-ins" ON check_ins
+  FOR SELECT USING (is_public = true);
+
 -- Users can update their own check-ins
 CREATE POLICY "Users can update own check-ins" ON check_ins
   FOR UPDATE USING (auth.uid() = user_id);

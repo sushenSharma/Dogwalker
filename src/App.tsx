@@ -12,6 +12,7 @@ import Profile from './pages/Profile';
 import Login from './pages/Login';
 import Landing from './pages/Landing';
 import AddDog from './pages/AddDog';
+import EditProfile from './pages/EditProfile';
 import MapView from './pages/MapView';
 import CheckIn from './pages/CheckIn';
 import Notifications from './pages/Notifications';
@@ -53,6 +54,7 @@ const AppContent: React.FC = () => {
       {isAuthenticated && (
         <>
           <Route path="/add-dog" element={<AddDog />} />
+          <Route path="/edit-profile" element={<EditProfile />} />
           <Route path="/map" element={<MapView />} />
           <Route path="/checkin" element={<CheckIn />} />
           <Route path="/notifications" element={<Notifications />} />

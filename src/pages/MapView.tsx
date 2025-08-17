@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Map from '../components/Map';
+import MapComponent from '../components/Map';
 import { checkInsService, CheckInWithProfile } from '../lib/checkInsService';
 import { openInMaps } from '../lib/mapsUtils';
 import { locationService, UserLocation } from '../lib/locationService';
@@ -57,7 +57,7 @@ const MapView: React.FC = () => {
     try {
       console.log('🔍 Searching for check-ins near:', { lat, lng, radius: '10km' });
       
-      // Simple query first - get all public check-ins
+      // Query check-ins first, then get profiles separately
       const { data: checkIns, error } = await supabase
         .from('check_ins')
         .select('*')
@@ -65,7 +65,7 @@ const MapView: React.FC = () => {
         .order('created_at', { ascending: false })
         .limit(100);
       
-      console.log('📊 Simple query result:', { checkIns, error });
+      console.log('📊 Query result with profiles:', { checkIns, error });
 
       if (error) {
         console.error('❌ Database error:', error);
@@ -80,6 +80,27 @@ const MapView: React.FC = () => {
         setNearbyCheckIns([]);
         return;
       }
+
+      // Get unique user IDs from check-ins
+      const userIds = Array.from(new Set(checkIns.map((checkIn: any) => checkIn.user_id)));
+      
+      // Fetch profiles for these users
+      const { data: profiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id, username, full_name, dog_name, avatar_url')
+        .in('id', userIds);
+
+      if (profilesError) {
+        console.error('Error fetching profiles:', profilesError);
+      }
+
+      console.log('👥 User profiles:', profiles);
+
+      // Create a map of user ID to profile for quick lookup
+      const profileMap = new Map<string, any>();
+      (profiles || []).forEach((profile: any) => {
+        profileMap.set(profile.id, profile);
+      });
       
       // Filter and add distance calculations
       const checkInsWithDistance = checkIns
@@ -93,18 +114,19 @@ const MapView: React.FC = () => {
           
           console.log(`📍 Check-in: ${checkIn.location_name}, Distance: ${distance.toFixed(2)}km`);
           
-          // Simple display name - we'll improve this later
-          const shortId = checkIn.user_id.substring(0, 8);
-          const displayName = `User ${shortId}`;
-          const username = shortId;
+          // Use actual profile data for display names
+          const profile = profileMap.get(checkIn.user_id);
+          const displayName = profile?.full_name || profile?.username || `User ${checkIn.user_id.substring(0, 8)}`;
+          const dogName = profile?.dog_name || '';
+          const username = profile?.username || checkIn.user_id.substring(0, 8);
           
           return {
             id: checkIn.id,
             user_id: checkIn.user_id,
             username: username,
             full_name: displayName,
-            dog_name: '',
-            avatar_url: '',
+            dog_name: dogName,
+            avatar_url: profile?.avatar_url || '',
             location_name: checkIn.location_name,
             location_type: checkIn.location_type,
             latitude: checkIn.latitude,
@@ -169,7 +191,7 @@ const MapView: React.FC = () => {
       {/* Map Container */}
       <div className="flex-1 relative">
         <div className="absolute inset-0">
-          <Map friends={[]} showFriends={false} />
+          <MapComponent friends={[]} showFriends={false} />
         </div>
 
         {/* Content - People Within 10km (Positioned after Start Walk button) */}
@@ -304,7 +326,9 @@ const MapView: React.FC = () => {
                       <div>
                         <p className="font-medium text-gray-900 text-sm">
                           {checkIn.full_name}
-                          {checkIn.dog_name && ` & ${checkIn.dog_name}`}
+                          {checkIn.dog_name && (
+                            <span className="text-green-600"> & {checkIn.dog_name}</span>
+                          )}
                         </p>
                         <p className="text-xs text-gray-600">{checkIn.distanceFormatted} away</p>
                       </div>
